@@ -4,11 +4,15 @@
 DROP DATABASE IF EXISTS Minimarket;
 CREATE DATABASE Minimarket;
 USE Minimarket;
+
+-- ===============================
+-- TABLA PROVEEDOR
+-- ===============================
 CREATE TABLE Proveedor (
     id_proveedor INT PRIMARY KEY,
-    nombre VARCHAR(150),
-    telefono VARCHAR(20),
-    correo VARCHAR(100)
+    nombre VARCHAR(150) NOT NULL,
+    telefono VARCHAR(20) NOT NULL,
+    correo VARCHAR(100) NOT NULL
 );
 
 INSERT INTO Proveedor VALUES
@@ -23,22 +27,32 @@ INSERT INTO Proveedor VALUES
 (9,'Toni','0999999999','toni@mail.com'),
 (10,'Santa María','0980000000','santamaria@mail.com');
 
-
+-- ===============================
+-- TABLA PRODUCTOS
+-- ===============================
 CREATE TABLE Productos (
     id_producto INT PRIMARY KEY,
-    codigo_barra VARCHAR(30),
-    nombre_producto VARCHAR(150),
-    marca VARCHAR(50),
-    categoria VARCHAR(50),
-    precio_venta DECIMAL(10,2),
-    costo_compra DECIMAL(10,2),
-    stock_disponible INT,
-    stock_minimo INT,
-    id_proveedor INT,
+    codigo_barra VARCHAR(30) UNIQUE NOT NULL,
+    nombre_producto VARCHAR(150) NOT NULL,
+    marca VARCHAR(50) NOT NULL,
+    categoria VARCHAR(50) NOT NULL,
+
+    precio_venta DECIMAL(10,2) NOT NULL,
+    costo_compra DECIMAL(10,2) NOT NULL,
+
+    stock_disponible INT NOT NULL DEFAULT 0,
+    stock_minimo INT NOT NULL DEFAULT 5,
+
+    id_proveedor INT NOT NULL,
 
     CONSTRAINT producto_proveedor_fk
         FOREIGN KEY (id_proveedor)
-        REFERENCES Proveedor(id_proveedor)
+        REFERENCES Proveedor(id_proveedor),
+
+    CONSTRAINT precio_venta_ck CHECK (precio_venta > 0),
+    CONSTRAINT costo_compra_ck CHECK (costo_compra > 0),
+    CONSTRAINT stock_disponible_ck CHECK (stock_disponible >= 0),
+    CONSTRAINT stock_minimo_ck CHECK (stock_minimo >= 0)
 );
 
 INSERT INTO Productos VALUES
@@ -53,14 +67,16 @@ INSERT INTO Productos VALUES
 (9,'7509','Pasta Dental','Colgate','Higiene',2.20,1.70,35,8,4),
 (10,'7510','Cereal','Nestlé','Cereales',3.50,2.80,45,10,2);
 
-
+-- ===============================
+-- TABLA CLIENTE
+-- ===============================
 CREATE TABLE Cliente (
     id_cliente INT PRIMARY KEY,
-    cedula CHAR(10),
-    nombre VARCHAR(200),
-    telefono VARCHAR(20),
-    correo VARCHAR(100),
-    direccion VARCHAR(255)
+    cedula CHAR(10) UNIQUE NOT NULL,
+    nombre VARCHAR(200) NOT NULL,
+    telefono VARCHAR(20) NOT NULL,
+    correo VARCHAR(100) NOT NULL,
+    direccion VARCHAR(255) NOT NULL
 );
 
 INSERT INTO Cliente VALUES
@@ -75,19 +91,25 @@ INSERT INTO Cliente VALUES
 (9,'0909090909','Paola Cruz','0991110009','paola@mail.com','Este'),
 (10,'1010101010','Diego Ríos','0991110010','diego@mail.com','Oeste');
 
-
+-- ===============================
+-- TABLA VENTAS
+-- ===============================
 CREATE TABLE Ventas (
     id_venta INT PRIMARY KEY,
     id_cliente INT NULL,
-    fecha_venta DATETIME,
-    forma_pago VARCHAR(20),
-    subtotal DECIMAL(12,2),
-    impuestos DECIMAL(12,2),
-    total_final DECIMAL(12,2),
+    fecha_venta DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    forma_pago VARCHAR(20) NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    impuestos DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_final DECIMAL(12,2) NOT NULL,
 
     CONSTRAINT venta_cliente_fk
         FOREIGN KEY (id_cliente)
-        REFERENCES Cliente(id_cliente)
+        REFERENCES Cliente(id_cliente),
+
+    CONSTRAINT subtotal_ck CHECK (subtotal > 0),
+    CONSTRAINT impuestos_ck CHECK (impuestos >= 0),
+    CONSTRAINT total_final_ck CHECK (total_final > 0)
 );
 
 INSERT INTO Ventas VALUES
@@ -101,12 +123,16 @@ INSERT INTO Ventas VALUES
 (8,8,'2025-01-08 17:00','Tarjeta',3.50,0.42,3.92),
 (9,9,'2025-01-09 18:00','Efectivo',1.30,0.16,1.46),
 (10,10,'2025-01-10 19:00','Transferencia',1.25,0.15,1.40);
+
+-- ===============================
+-- TABLA DETALLE VENTA
+-- ===============================
 CREATE TABLE DetalleVenta (
     id_venta INT,
     id_producto INT,
-    cantidad_vendida INT,
-    precio_unitario DECIMAL(10,2),
-    subtotal_detalle DECIMAL(12,2),
+    cantidad_vendida INT NOT NULL DEFAULT 1,
+    precio_unitario DECIMAL(10,2) NOT NULL,
+    subtotal_detalle DECIMAL(12,2) NOT NULL,
 
     PRIMARY KEY (id_venta, id_producto),
 
@@ -116,7 +142,11 @@ CREATE TABLE DetalleVenta (
 
     CONSTRAINT detalle_producto_fk
         FOREIGN KEY (id_producto)
-        REFERENCES Productos(id_producto)
+        REFERENCES Productos(id_producto),
+
+    CONSTRAINT cantidad_ck CHECK (cantidad_vendida > 0),
+    CONSTRAINT precio_unitario_ck CHECK (precio_unitario > 0),
+    CONSTRAINT subtotal_detalle_ck CHECK (subtotal_detalle > 0)
 );
 
 INSERT INTO DetalleVenta VALUES
@@ -131,6 +161,8 @@ INSERT INTO DetalleVenta VALUES
 (8,10,1,3.50,3.50),
 (9,7,1,1.30,1.30);
 
-SELECT * From DetalleVenta;
-SELECT * From Ventas;
-
+-- ===============================
+-- CONSULTAS DE PRUEBA
+-- ===============================
+SELECT * FROM Ventas;
+SELECT * FROM DetalleVenta;
