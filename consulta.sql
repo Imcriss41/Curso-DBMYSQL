@@ -168,7 +168,7 @@ WHERE descuento < ANY (
   where cedula_cliente = '0100000010'
 );
 
--- Caso: Listado de pacientes del plan medicina frecuentepresente el precio final de la medicina junto el precio sin descuento
+-- Caso: Listado de pacientes del plan medicina frecuente presente el precio final de la medicina junto el precio sin descuento
 
 
 
@@ -211,28 +211,66 @@ FROM pacientes_permanentes;
 
 
 SELECT
-    clasificacion_medicinas.id_medicina AS id_comercial,
+    clasificacion_medicinas.medicina_com AS id_comercial,
 
     (SELECT nombre
      FROM medicinas
-     WHERE id = clasificacion_medicinas.id_medicina) AS medicina_comercial,
+     WHERE id = clasificacion_medicinas.medicina_com) AS medicina_comercial,
 
     (SELECT precio
      FROM medicinas
-     WHERE id = clasificacion_medicinas.id_medicina) AS precio_comercial,
+     WHERE id = clasificacion_medicinas.medicina_com) AS precio_comercial,
 
-    clasificacion_medicinas.alternativa AS id_generica,
+    clasificacion_medicinas.medicina_gen AS id_generica,
 
     (SELECT nombre
      FROM medicinas
-     WHERE id = clasificacion_medicinas.alternativa) AS medicina_generica,
+     WHERE id = clasificacion_medicinas.medicina_gen) AS medicina_generica,
 
     (SELECT precio
      FROM medicinas
-     WHERE id = clasificacion_medicinas.alternativa) AS precio_generico
-FROM clasificacion_medicina
+     WHERE id = clasificacion_medicinas.medicina_gen) AS precio_generico
+
+FROM clasificacion_medicinas;
+
 
 Select * FROM clasificacion_medicinas;
+
+-- USANDO JOIN EL PRIMER CASO DE DESCUENTO
+SELECT
+    pp.cedula_cliente AS cedula,
+    c.nombre AS cliente,
+    m.nombre AS medicamento,
+    m.precio AS precio_original,
+    pp.descuento,
+
+    (m.precio * pp.descuento / 100) AS valor_descuento,
+
+    (m.precio - (m.precio * pp.descuento / 100)) AS precio_final
+
+FROM pacientes_permanentes pp
+JOIN clientes c
+    ON pp.cedula_cliente = c.cedula
+JOIN medicinas m
+    ON pp.id_medicamento = m.id;
+
+
+-- USANDO JOIN EL SEGUNDO CASO GENERICAMENTE
+SELECT
+    cm.medicina_com AS id_comercial,
+    mc.nombre       AS medicina_comercial,
+    mc.precio       AS precio_comercial,
+
+    cm.medicina_gen AS id_generica,
+    mg.nombre       AS medicina_generica,
+    mg.precio       AS precio_generico
+FROM clasificacion_medicinas cm
+JOIN medicinas mc
+    ON mc.id = cm.medicina_com
+JOIN medicinas mg
+    ON mg.id = cm.medicina_gen;
+
+
 
 Select * from medicinas;
 
