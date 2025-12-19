@@ -276,6 +276,163 @@ Select * from medicinas;
 
 
 
+--- CREAR TODAS LAS COMBINACIONES POSIBLES ENTRE TABLA DE CLIENTES Y MEDICINA
+
+SELECT *
+from 
+clientes,   --- NO HACER ESTO
+clasificacion_medicinas;
+
+SELECT *
+from     --- PRUEBA 2 DE NO HACERLO
+medicinas,  
+clasificacion_medicinas;
+
+----- EJEMPLO CORRECTO
+
+SELECT *
+from 
+clientes,  
+clasificacion_medicinas;
+WHERE
+cliente.cedula = medicinafrecuente.cliente_cedula;
+
+
+---  CASO DE MEDICINA
+
+SELECT *
+from 
+medicinas,  
+clasificacion_medicinas;
+WHERE
+medicinas.id = medicinafrecuente.medicina_id;
+
+---- AGREGANDO CLIENTES
+SELECT
+    c.cedula,
+    c.nombre,
+    m.nombre,
+    pp.descuento,
+    m.tipo
+FROM
+    clientes c,
+    medicinas m,
+    pacientes_permanentes pp
+WHERE
+    m.id = pp.id_medicamento
+    AND c.cedula = pp.cedula_cliente
+    and m.tipo = "COM";
+
+-- EJEMPLOS USANDO JOINN
+
+    SELECT
+    c.cedula,
+    c.nombre,
+    m.nombre,
+    pp.descuento,
+    m.tipo
+FROM
+    pacientes_permanentes pp
+JOIN clientes c
+    ON c.cedula = pp.cedula_cliente
+JOIN medicinas m
+    ON m.id = pp.id_medicamento
+WHERE
+    m.tipo = 'COM';
+
+-- MEDICINA GENERICA Y COMERCIAL USANDO DOS VECES LA TABLA DE MEDICINA
+
+SELECT
+    mcom.id     AS id_comercial,
+    mcom.nombre AS medicina_comercial,
+    mcom.precio AS precio_comercial,
+
+    mgen.id     AS id_generica,
+    mgen.nombre AS medicina_generica,
+    mgen.precio AS precio_generico
+FROM clasificacion_medicinas cm
+JOIN medicinas mcom ON mcom.id = cm.medicina_com
+JOIN medicinas mgen ON mgen.id = cm.medicina_gen;
+
+
+-- === FACTURA ====================
+-- ==========================
+-- CABECERA DE LA FACTURA
+-- =========================
+SELECT
+    e.razonsocial AS farmacia,
+    e.ruc         AS ruc_farmacia,
+    e.direccion,
+    e.telefono,
+    e.email       AS email_farmacia,
+
+    f.facturanumero,
+    f.fecha,
+
+    c.cedula      AS cedula_cliente,
+    c.nombre,
+    c.apellido,
+    c.email       AS email_cliente,
+
+    f.total
+FROM facturas f
+JOIN clientes c 
+    ON c.cedula = f.cedula_cliente
+JOIN empresa e 
+    ON e.ruc = '1799999999001'
+WHERE f.facturanumero = 'F0001';
+-- ====================
+-- DETALLLE
+-- ====================
+
+    SELECT
+    fd.facturanumero,
+    m.id AS id_medicamento,
+    m.nombre AS medicamento,
+    fd.cantidad,
+    m.precio,
+    (fd.cantidad * m.precio) AS subtotal
+FROM facturadetalle fd
+JOIN medicinas m
+    ON m.id = fd.medicamento_id
+WHERE fd.facturanumero = 'F0001';
+-- ===================
+-- PIE DE FACTURA
+-- ==================
+SELECT
+    f.facturanumero,
+    f.total,
+    mp.descripcion AS metodo_pago
+FROM facturas f
+JOIN metodo_pago mp
+    ON mp.id = f.metodo_pago_id
+WHERE f.facturanumero = 'F0001';
+-- ======================================
+
+
+Show tables;
+DESCRIBE facturas;
+SELECT * 
+FROM facturas 
+WHERE facturanumero = '0100000001';
+
+SELECT 
+    f.facturanumero,
+    f.cedula_cliente,
+    c.cedula
+FROM facturas f
+LEFT JOIN clientes c 
+    ON c.cedula = f.cedula_cliente;
+
+
+
+
+
+
+
+
+
+
 
 
 

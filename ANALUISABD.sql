@@ -6,7 +6,8 @@ CREATE DATABASE SaludTotal;
 USE SaludTotal;
 
 -- =====================================
--- TABLA MEDICINAS (GEN primero, luego COM)
+-- TABLA MEDICINAS
+-- (Primero GEN, luego COM)
 -- =====================================
 CREATE TABLE medicinas (
     id INT PRIMARY KEY,
@@ -17,7 +18,7 @@ CREATE TABLE medicinas (
     fechaCaducidad DATE
 );
 
--- ========= MEDICINAS GENÉRICAS =========
+-- ===== MEDICINAS GENÉRICAS =====
 INSERT INTO medicinas VALUES
 (1,'Paracetamol','GEN',1.50,120,'2026-01-01'),
 (2,'Ibuprofeno','GEN',2.10,80,'2026-06-01'),
@@ -30,7 +31,7 @@ INSERT INTO medicinas VALUES
 (9,'Omeprazol','GEN',1.90,110,'2026-09-01'),
 (10,'Enalapril','GEN',2.40,95,'2026-12-10');
 
--- ========= MEDICINAS COMERCIALES =========
+-- ===== MEDICINAS COMERCIALES =====
 INSERT INTO medicinas VALUES
 (11,'Advil','COM',8.90,70,'2026-03-02'),
 (12,'Tylenol','COM',7.60,85,'2026-04-11'),
@@ -55,15 +56,31 @@ CREATE TABLE clasificacion_medicinas (
 );
 
 INSERT INTO clasificacion_medicinas VALUES
-(1,12),   -- Paracetamol → Tylenol
-(2,11),   -- Ibuprofeno → Advil
-(3,13),   -- Amoxicilina → Augmentin
-(5,14),   -- Diclofenaco → Voltaren
-(6,15),   -- Metformina → Glucophage
-(8,16),   -- Atorvastatina → Lipitor
-(9,19),   -- Omeprazol → Losec
-(10,18),  -- Enalapril → Norvasc
-(4,11);   -- Aspirina → Advil
+(1,12),
+(2,11),
+(3,13),
+(4,11),
+(5,14),
+(6,15),
+(8,16),
+(9,19),
+(10,18);
+
+
+-- =====================================
+-- EMPRESA
+-- =====================================
+
+CREATE TABLE empresa (
+    ruc CHAR(13) PRIMARY KEY,
+    razonsocial VARCHAR(100),
+    direccion VARCHAR(100),
+    telefono VARCHAR(14),
+    email VARCHAR(100)
+);
+
+INSERT INTO empresa VALUES
+('1799999999001','Salud Total S.A.','Av. 10 de Agosto','0998887776','contacto@saludtotal.com');
 
 -- =====================================
 -- TABLA CLIENTES
@@ -119,5 +136,55 @@ INSERT INTO pacientes_permanentes VALUES
 ('0100000005',7,'Hipertensión','DIA','NO','Oral',1,6.00),
 ('0100000005',18,'Hipertensión','DIA','NO','Oral',1,7.00);
 
+-- =====================================
+-- TABLA MÉTODOS DE PAGO
+-- =====================================
+CREATE TABLE metodo_pago (
+    id INT PRIMARY KEY,
+    descripcion VARCHAR(50)
+);
+
+INSERT INTO metodo_pago VALUES
+(1,'Efectivo'),
+(2,'Tarjeta'),
+(3,'Transferencia');
+
+-- =====================================
+-- TABLA FACTURAS (CABECERA)
+-- =====================================
+CREATE TABLE facturas (
+    facturanumero CHAR(10) PRIMARY KEY,
+    fecha DATE,
+    cedula_cliente CHAR(10),
+    metodo_pago_id INT,
+    total DECIMAL(15,2),
+    FOREIGN KEY (cedula_cliente) REFERENCES clientes(cedula),
+    FOREIGN KEY (metodo_pago_id) REFERENCES metodo_pago(id)
+);
+
+INSERT INTO facturas VALUES
+('F0001','2025-01-10','0100000001',1,12.50),
+('F0002','2025-01-12','0100000002',2,22.10);
+
+-- =====================================
+-- TABLA FACTURA DETALLE
+-- =====================================
+CREATE TABLE facturadetalle (
+    facturanumero CHAR(10),
+    medicamento_id INT,
+    cantidad INT,
+    precio_unitario DECIMAL(15,2),
+    subtotal DECIMAL(15,2),
+    PRIMARY KEY (facturanumero, medicamento_id),
+    FOREIGN KEY (facturanumero) REFERENCES facturas(facturanumero),
+    FOREIGN KEY (medicamento_id) REFERENCES medicinas(id)
+);
+
+INSERT INTO facturadetalle VALUES
+('F0001',1,2,1.50,3.00),
+('F0001',9,1,1.90,1.90),
+('F0002',15,1,16.70,16.70),
+('F0002',6,2,3.10,6.20);
 
 
+Select * from facturadetalle;
