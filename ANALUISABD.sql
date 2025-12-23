@@ -44,6 +44,8 @@ INSERT INTO medicinas VALUES
 (19,'Losec','COM',17.60,48,'2026-11-14'),
 (20,'Lantus','COM',35.10,22,'2028-08-27');
 
+
+
 -- =====================================
 -- CLASIFICACIÓN MEDICINAS (GEN → COM)
 -- =====================================
@@ -101,6 +103,42 @@ INSERT INTO clientes VALUES
 ('0100000003','Carlos','Rodríguez','NAT',23,'carlos@mail.com','0990000003'),
 ('0100000004','Ana','Martínez','NAT',22,'ana@mail.com','0990000004'),
 ('0100000005','Luis','Hernández','JUR',21,'luis@mail.com','0990000005');
+Insert into clientes values
+('0100000006','Pedro','Ramírez','NAT',26,'pedro@mail.com','0990000006'),
+('0100000007','Lucía','Torres','NAT',27,'lucia@mail.com','0990000007'),
+('0100000008','Jorge','Flores','JUR',28,'jorge@mail.com','0990000008'),
+('0100000009','Sofía','Vargas','NAT',29,'sofia@mail.com','0990000009'),
+('0100000010','Miguel','Castro','NAT',30,'miguel@mail.com','0990000010'),
+
+('0100000011','Daniela','Rojas','NAT',31,'daniela@mail.com','0990000011'),
+('0100000012','Andrés','Moreno','JUR',32,'andres@mail.com','0990000012'),
+('0100000013','Paola','Navarro','NAT',33,'paola@mail.com','0990000013'),
+('0100000014','Fernando','Ortega','NAT',34,'fernando@mail.com','0990000014'),
+('0100000015','Valeria','Guerrero','NAT',35,'valeria@mail.com','0990000015'),
+
+('0100000016','Ricardo','Peña','NAT',36,'ricardo@mail.com','0990000016'),
+('0100000017','Camila','Mendoza','NAT',37,'camila@mail.com','0990000017'),
+('0100000018','Diego','Cabrera','JUR',38,'diego@mail.com','0990000018'),
+('0100000019','Natalia','León','NAT',39,'natalia@mail.com','0990000019'),
+('0100000020','Sebastián','Paredes','NAT',40,'sebastian@mail.com','0990000020'),
+
+('0100000021','Andrea','Silva','NAT',41,'andrea@mail.com','0990000021'),
+('0100000022','Héctor','Aguirre','JUR',42,'hector@mail.com','0990000022'),
+('0100000023','Gabriela','Suárez','NAT',43,'gabriela@mail.com','0990000023'),
+('0100000024','Óscar','Delgado','NAT',44,'oscar@mail.com','0990000024'),
+('0100000025','Paúl','Villacís','NAT',45,'paul@mail.com','0990000025'),
+
+('0100000026','Monica','Benítez','NAT',46,'monica@mail.com','0990000026'),
+('0100000027','Iván','Reinoso','NAT',47,'ivan@mail.com','0990000027'),
+('0100000028','Karla','Espinoza','NAT',48,'karla@mail.com','0990000028'),
+('0100000029','Esteban','Luna','JUR',49,'esteban@mail.com','0990000029'),
+('0100000030','Patricia','Acosta','NAT',50,'patricia@mail.com','0990000030'),
+
+('0100000031','Alberto','Salinas','NAT',51,'alberto@mail.com','0990000031'),
+('0100000032','Verónica','Bravo','NAT',52,'veronica@mail.com','0990000032')
+
+
+
 
 -- =====================================
 -- PACIENTES PERMANENTES

@@ -129,7 +129,7 @@ WHERE tipo = 'JUR'
 SELECT id, nombre, precio, tipo
 from medicinas
 Where stock = '80'
-And tipo like '%Gen%'
+And tipo like '%Gen%' -- VERIFICAR LAS MEDICINAS
 
 SELECT id, nombre, tipo, precio, stock
 FROM medicinas
@@ -355,10 +355,9 @@ JOIN medicinas mcom ON mcom.id = cm.medicina_com
 JOIN medicinas mgen ON mgen.id = cm.medicina_gen;
 
 
--- === FACTURA ====================
--- ==========================
+-- === FACTURA ====================-- ======================================
 -- CABECERA DE LA FACTURA
--- =========================
+-- ======================================
 SELECT
     e.razonsocial AS farmacia,
     e.ruc         AS ruc_farmacia,
@@ -381,14 +380,15 @@ JOIN clientes c
 JOIN empresa e 
     ON e.ruc = '1799999999001'
 WHERE f.facturanumero = 'F0001';
--- ====================
--- DETALLLE
--- ====================
 
-    SELECT
+
+-- ======================================
+-- DETALLE DE LA FACTURA
+-- ======================================
+SELECT
     fd.facturanumero,
-    m.id AS id_medicamento,
-    m.nombre AS medicamento,
+    m.id           AS id_medicamento,
+    m.nombre       AS medicamento,
     fd.cantidad,
     m.precio,
     (fd.cantidad * m.precio) AS subtotal
@@ -396,9 +396,11 @@ FROM facturadetalle fd
 JOIN medicinas m
     ON m.id = fd.medicamento_id
 WHERE fd.facturanumero = 'F0001';
--- ===================
+
+
+-- ======================================
 -- PIE DE FACTURA
--- ==================
+-- ======================================
 SELECT
     f.facturanumero,
     f.total,
@@ -407,15 +409,24 @@ FROM facturas f
 JOIN metodo_pago mp
     ON mp.id = f.metodo_pago_id
 WHERE f.facturanumero = 'F0001';
+
+
+-- ======================================
+-- UTILIDADES / VERIFICACIONES
 -- ======================================
 
+-- Mostrar tablas
+SHOW TABLES;
 
-Show tables;
+-- Estructura de la tabla facturas
 DESCRIBE facturas;
+
+-- Ver factura específica
 SELECT * 
 FROM facturas 
-WHERE facturanumero = '0100000001';
+WHERE facturanumero = 'F0001';
 
+-- Verificación de relación factura - cliente
 SELECT 
     f.facturanumero,
     f.cedula_cliente,
@@ -423,6 +434,211 @@ SELECT
 FROM facturas f
 LEFT JOIN clientes c 
     ON c.cedula = f.cedula_cliente;
+
+-- PRECIO NO MAS DE 5 DOLARES
+select
+  id,
+  nombre,
+  precio
+from medicinas
+where not precio > 5;
+
+
+
+
+-- CASO:LISTA ORDENANDA DE CLIENTES POR NOMBRE ALFABETICOS
+
+Select * From Clientes
+
+Select *
+from clientes
+ORDER BY
+  apellido DESC limit 1;
+
+  -- CASO : CONONCER LAS 5 MEDICINAS MAS CARAS DE LA FARMACIA
+
+  SELECT
+    id,
+    nombre,
+    precio
+FROM medicinas
+WHERE precio IS NOT NULL
+ORDER BY precio DESC -- mas cara
+LIMIT 5;
+
+
+-- CASO: CONOCER LAS 5 MEDICINAS MAS BARATAS DE LA FARMACIASELECT
+SELECT
+ id,
+    nombre,
+    precio
+FROM medicinas
+WHERE precio IS NOT NULL
+ORDER BY precio ASC -- mas barata
+LIMIT 5;
+
+
+-- CASO: MEDICINA COMERCIAL MAS BARATA
+
+SELECT
+    id,
+    nombre,
+    precio
+FROM medicinas
+WHERE tipo = 'COM'
+  AND precio IS NOT NULL
+ORDER BY precio ASC
+LIMIT 1;
+
+-- CASO: MEDICINA GENERICA MAS CARA
+SELECT
+    id,
+    nombre,
+    precio
+FROM medicinas
+WHERE tipo = 'GEN'
+  AND precio IS NOT NULL
+ORDER BY precio DESC
+LIMIT 1;
+-- CASO: MEDICINAS CON EL MENOR DESCUENTO 5
+SELECT
+    m.id,
+    m.nombre,
+    m.precio,
+    pp.descuento
+FROM pacientes_permanentes pp
+INNER JOIN medicinas m
+    ON m.id = pp.id_medicamento
+WHERE m.tipo = 'COM'
+  AND pp.descuento IS NOT NULL
+ORDER BY pp.descuento ASC
+LIMIT 5;
+
+SELECT
+    m.id,
+    m.nombre,
+    m.precio,
+    MIN(pp.descuento) AS menor_descuento
+FROM pacientes_permanentes pp
+INNER JOIN medicinas m
+    ON m.id = pp.id_medicamento
+WHERE m.tipo = 'COM'
+  AND pp.descuento IS NOT NULL
+GROUP BY
+    m.id,
+    m.nombre,
+    m.precio
+ORDER BY menor_descuento ASC
+
+
+-- ORDEN REALIZADA
+
+SELECT DISTINCT
+    m.id,
+    m.nombre,
+    pp.descuento
+FROM pacientes_permanentes pp
+JOIN medicinas m 
+    ON m.id = pp.id_medicamento
+WHERE m.id IN (
+    SELECT
+        m2.id
+    FROM pacientes_permanentes pp2
+    JOIN medicinas m2 
+        ON m2.id = pp2.id_medicamento
+    WHERE m2.tipo = 'COM'
+)
+ORDER BY pp.descuento ASC
+LIMIT 5;
+-- CASO : AGRUPAMIENTOS
+
+Select  
+tipo,
+count (*) as Numero
+from clientes
+GROUP BY 
+tipo;
+
+desc medicinas;
+
+SELECT
+nombre,
+precio,
+stock,
+precio * stock
+from medicinas;
+
+
+SELECT
+tipo,
+SUM (precio * stock)
+from medicinas
+GROUP BY
+tipo;
+-- FACTURA DETALLES, VALOR monetario por medicina vendida
+
+
+SELECT
+    medicamento_id,
+    cantidad,
+    precio_unitario,
+    cantidad * precio_unitario AS subtotal_calculado
+FROM facturadetalle
+ORDER BY medicamento_id;
+
+SELECT
+    m.id AS medicamento_id,
+    m.nombre AS medicamento,
+    SUM(fd.cantidad * fd.precio_unitario) AS total_por_medicamento
+FROM facturadetalle fd
+JOIN medicinas m
+    ON m.id = fd.medicamento_id
+GROUP BY
+    m.id,
+    m.nombre
+ORDER BY
+    m.id;
+
+-- EL MEJOR CLIENTE
+
+
+
+SELECT
+    fd.facturanumero,
+    f.cedula_cliente,
+    SUM(fd.cantidad * fd.precio_unitario) AS total_factura
+FROM facturadetalle fd
+JOIN facturas f
+    ON f.facturanumero = fd.facturanumero
+GROUP BY
+    fd.facturanumero,
+    f.cedula_cliente
+ORDER BY
+    fd.facturanumero;
+
+SELECT
+    c.cedula,
+    c.nombre,
+    c.apellido,
+    SUM(f.total) AS total_comprado
+FROM facturas f
+JOIN clientes c
+    ON c.cedula = f.cedula_cliente
+GROUP BY c.cedula, c.nombre, c.apellido
+ORDER BY total_comprado DESC
+LIMIT 1;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
