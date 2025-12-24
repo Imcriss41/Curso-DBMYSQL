@@ -629,9 +629,101 @@ ORDER BY total_comprado DESC
 LIMIT 1;
 
 
+-- CASO: PROYECCION
+
+SELECT
+    m.id,
+    m.nombre,
+    m.stock,
+    m.precio,
+    COALESCE(MIN(pp.descuento), 0) AS descuento,
+    (m.stock * m.precio) 
+      - (m.stock * COALESCE(MIN(pp.descuento), 0)) AS venta_proyectada
+FROM medicinas m
+LEFT JOIN pacientes_permanentes pp
+    ON pp.id_medicamento = m.id
+GROUP BY
+    m.id,
+    m.nombre,
+    m.stock,
+    m.precio
+ORDER BY
+    venta_proyectada DESC;
+
+--  =======================
+-- SOLUCION CON EL ING
+-- =======================
+
+create view v_ventas_proyeccion
+as
+SELECT
+    pp.id_medicamento,
+    m.nombre,
+    m.precio,
+    m.stock,
+    pp.descuento,
+    (m.precio - pp.descuento) AS nuevo_precio
+FROM pacientes_permanentes pp
+JOIN medicinas m
+    ON m.id = pp.id_medicamento
+UNION
+
+SELECT
+    m.id AS id_medicamento,
+    m.nombre,
+    m.precio,
+    m.stock,
+    0.00 AS descuento,  -- sin descuento es descuento 0
+    m.precio AS nuevo_precio
+FROM medicinas m
+LEFT JOIN pacientes_permanentes pp
+    ON pp.id_medicamento = m.id
+WHERE pp.id_medicamento IS NULL;
+
+
+-- PROYECCION DE VENTAS
+
+SELECT
+    SUM(nuevo_precio * stock) AS venta_total_proyectada
+FROM v_ventas_proyeccion;
 
 
 
+-- CASO DE FECHA
+
+SELECT
+    id,
+    nombre,
+    fechaCaducidad
+FROM medicinas
+WHERE fechaCaducidad >= DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)
+  AND fechaCaducidad <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))
+ORDER BY fechaCaducidad;
+
+
+
+
+
+
+-- CRONOGRAMA PARA 3 MESES DE LAS MEDICINAS
+CREATE OR REPLACE VIEW v_cronograma_vencimiento_3m AS
+SELECT
+    DATE_FORMAT(fechaCaducidad, '%Y-%m') AS mes_vencimiento,
+    id,
+    nombre,
+    fechaCaducidad,
+    stock,
+    tipo
+FROM medicinas
+WHERE fechaCaducidad >= CURDATE()
+  AND fechaCaducidad <= LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 3 MONTH));
+
+
+SELECT *
+FROM v_cronograma_vencimiento_3m
+ORDER BY
+    mes_vencimiento,
+    fechaCaducidad;
 
 
 
