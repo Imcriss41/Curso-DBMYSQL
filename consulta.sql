@@ -701,10 +701,6 @@ WHERE fechaCaducidad >= DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)
 ORDER BY fechaCaducidad;
 
 
-
-
-
-
 -- CRONOGRAMA PARA 3 MESES DE LAS MEDICINAS
 CREATE OR REPLACE VIEW v_cronograma_vencimiento_3m AS
 SELECT
@@ -728,9 +724,110 @@ ORDER BY
 
 
 
+-- CASO 26/12/25
+CREATE OR REPLACE VIEW v_mov_ventas AS
+SELECT
+    f.fecha,
+    fd.medicamento_id,
+    m.nombre AS medicina,
+    f.facturanumero AS documento,
+    'VENTA' AS tipo_mov,
+    m.stock AS stock_actual,
+    fd.cantidad AS salida
+FROM facturadetalle fd
+JOIN facturas f
+    ON f.facturanumero = fd.facturanumero
+JOIN medicinas m
+    ON m.id = fd.medicamento_id;
 
 
+SELECT * FROM v_mov_ventas;
 
+
+CREATE OR REPLACE VIEW v_mov_compras AS
+SELECT
+    c.fecha,
+    cd.medicamento_id,
+    m.nombre AS medicina,
+    c.compranumero AS documento,
+    'COMPRA' AS tipo_mov,
+    m.stock AS stock_actual,
+    cd.cantidad AS entrada
+FROM compradetalle cd
+JOIN compras c
+    ON c.compranumero = cd.compranumero
+JOIN medicinas m
+    ON m.id = cd.medicamento_id;
+
+
+SELECT
+    fecha,
+    medicamento_id,
+    medicina,
+    documento,
+    tipo_mov,
+    stock_actual,
+    entrada,
+    0 AS salida
+FROM v_mov_compras
+
+UNION ALL
+
+SELECT
+    fecha,
+    medicamento_id,
+    medicina,
+    documento,
+    tipo_mov,
+    stock_actual,
+    0 AS entrada,
+    salida
+FROM v_mov_ventas;
+
+-- PRACTICA
+SELECT
+    fecha,
+    medicamento_id,
+    tipo_mov,
+    stock_actual,
+    entrada,
+    salida,
+
+    stock_actual
+    + SUM(
+        CASE tipo_mov
+            WHEN 'COMPRA' THEN entrada
+            WHEN 'VENTA'  THEN -salida
+        END
+      ) OVER (
+        PARTITION BY medicamento_id
+        ORDER BY fecha
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+      ) AS saldo
+
+FROM (
+    SELECT
+        fecha,
+        medicamento_id,
+        tipo_mov,
+        stock_actual,
+        entrada,
+        0 AS salida
+    FROM v_mov_compras
+
+    UNION ALL
+
+    SELECT
+        fecha,
+        medicamento_id,
+        tipo_mov,
+        stock_actual,
+        0 AS entrada,
+        salida
+    FROM v_mov_ventas
+) v_movimientos
+WHERE medicamento_id = 1
+ORDER BY fecha;
 
 
 
